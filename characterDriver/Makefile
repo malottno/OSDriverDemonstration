@@ -11,12 +11,29 @@ default:
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	rm charTest
+	rm -f /dev/charDevice[0-3]
 
 test:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 	gcc charTest.c -o charTest
 	chmod +x ./charTest
+	insmod ./charDriver.ko $* || exit 1
+	rm -f /dev/charDevice[0-3]
+	mknod /dev/charDevice0 c 250 0
+	mknod /dev/charDevice1 c 250 1
 	./charTest >> charTest.log
+	rmmod charDriver
+	rm -f /dev/charDevice[0-3]
+
+install:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	insmod ./charDriver.ko $* || exit 1
+
+uninstall:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	rm charTest
+	rm -f /dev/charDevice[0-3]
+	rmmod charDriver
 
 rmall:
 	rmall '*.o' '*.ko' '*.mod.c' Mod* mod* '.[a-z]*' '.tmp_versions/*'

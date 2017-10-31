@@ -47,6 +47,8 @@ static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 
 	sprintf(data, "This is a test of %d bytes read\n", b_read);
 
+	printk(KERN_INFO "charDriver: Read2()\n");
+
 	while(len && *data_ptr){
 		put_user(*(data_ptr++), buf++);
 		len--;
@@ -67,6 +69,8 @@ static int c_open(struct inode *i, struct file *f){
 	int retVal = 0;
 	printk(KERN_INFO "\tcharDriver: opened");
 
+	int err, devno = MKDEV(250,
+
 	try_module_get(THIS_MODULE);
 
 	return retVal;
@@ -86,7 +90,7 @@ int init_module(void){
 	dev_t DEV_T;
 
 	printk(KERN_ALERT "Entering Character Driver\n");
-	major = register_chrdev(0, device, &fops);
+	major = register_chrdev(250, device, &fops);
 
 
 	if(major < 0){

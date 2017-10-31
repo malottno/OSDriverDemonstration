@@ -15,7 +15,20 @@ clean:
 test:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 	gcc netTest.c -o netTest
+	insmod ./netDriver.ko $* || exit 1
+	ifconfig NetDevEx 192.168.0.1
 	./netTest >> netTest.log
+	rmmod netDriver
+
+install:
+	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	insmod ./netDriver.ko $* || exit 1
+	ifconfig NetDevEx 192.168.0.1
+
+uninstall:
+	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	rm netTest
+	rmmod netDriver
 
 rmall:
 	rmall '*.o' '*.ko' '*.mod.c' Mod* mod* '.[a-z]*' '.tmp_versions/*'
