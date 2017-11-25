@@ -7,6 +7,7 @@
 #include<time.h>
 #include<pthread.h>
 
+#define ITERATIONS 100000
 #define BUFFER_LENGTH 80
 static char rx[BUFFER_LENGTH];
 
@@ -28,9 +29,9 @@ void *threadWriter(void *vargp)
 		printf("FAILED: Open Device\n");
 		return 1;
 	}
-	close(f);
-	for(i = 0; i < 100000; i++){
-		f = open("/dev/charDevice", O_RDWR);
+	//close(f);
+	for(i = 0; i < ITERATIONS; i++){
+		//f = open("/dev/charDevice", O_RDWR);
 		if (f > 0){
 			retVal = write(f, strig, (i%25) + 1);
 			processed += retVal;
@@ -40,10 +41,10 @@ void *threadWriter(void *vargp)
 				return 2;
 			}
 		}
-		close(f);
+		//close(f);
 
 
-		f = open("/dev/charDevice", O_RDWR);
+		//f = open("/dev/charDevice", O_RDWR);
 		if (f > 0){
 			retVal = read(f, rx, BUFFER_LENGTH);
 			//printf("%s\n\n",rx, BUFFER_LENGTH);
@@ -53,8 +54,9 @@ void *threadWriter(void *vargp)
 			}
 		}
 		tx = tx + 1;
-		close(f);
+		//close(f);
 	}
+	close(f);
 
 	fp=fopen("./testData.csv","a");
 	fprintf(fp, "%d,%d,",processed,tx);
@@ -79,7 +81,7 @@ int main(){
 	printf("Test started at: %s\n\n", dt);
 
 	fo = fopen("./testData.csv","a");
-	fprintf(fo, "charDriverTest,%s,",dt);
+	fprintf(fo, "charDriverTestM,%s,%d,",dt,ITERATIONS);
 	fclose(fo);
 
 	clock_t start = clock(), diff;

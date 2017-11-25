@@ -15,7 +15,7 @@ clean:
 
 test:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
-	gcc charTest.c -o charTest
+	gcc charTest.c -o charTest -lpthread
 	chmod +x ./charTest
 	insmod ./charDriver.ko $* || exit 1
 	rm -f /dev/charDevice[0-3]
@@ -24,6 +24,7 @@ test:
 	./charTest >> charTest.log
 	rmmod charDriver
 	rm -f /dev/charDevice[0-3]
+	cat charTest.log
 
 install:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
