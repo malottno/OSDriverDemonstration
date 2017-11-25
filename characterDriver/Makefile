@@ -15,9 +15,9 @@ clean:
 	rm -f /dev/charDevice[0-3]
 
 test:
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
-	gcc charTest.c -o charTest -lpthread
-	gcc charTestM.c -o charTestM -lpthread
+	$(MAKE) -C $(KDIR) M=$(PWD) modules 2>charTest.log
+	gcc charTest.c -o charTest -lpthread 2>charTest.log
+	gcc charTestM.c -o charTestM -lpthread 2>charTest.log
 	chmod +x ./charTest
 	chmod +x ./charTestM
 	insmod ./charDriver.ko $* || exit 1
@@ -26,7 +26,6 @@ test:
 	mknod /dev/charDevice1 c 250 1
 
 	for i in 1 2 3 4 5 6 7 8 9 10 ; do \
-		echo $$i ; \
 		./charTest >> charTest.log ; \
 		./charTestM >> charTest.log ; \
 	done

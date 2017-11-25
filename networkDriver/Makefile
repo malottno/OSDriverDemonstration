@@ -6,15 +6,12 @@ PWD := $(shell pwd)
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
-	gcc netTest.c -o netTest
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
-	rm netTest
 
 test:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
-	gcc netTest.c -o netTest
 	insmod ./netDriver.ko $* || exit 1
 	ifconfig NetDevEx 192.168.0.1
 	ping 192.168.0.1 -c 10 >> netTest.log
@@ -29,7 +26,6 @@ install:
 
 uninstall:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
-	rm netTest
 	rmmod netDriver
 
 rmall:
