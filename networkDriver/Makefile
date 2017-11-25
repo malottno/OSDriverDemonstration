@@ -17,8 +17,10 @@ test:
 	gcc netTest.c -o netTest
 	insmod ./netDriver.ko $* || exit 1
 	ifconfig NetDevEx 192.168.0.1
-	./netTest >> netTest.log
+	ping 192.168.0.1 -c 10 >> netTest.log
+	ifconfig NetDevEx >> netTest.log
 	rmmod netDriver
+	cat netTest.log
 
 install:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules

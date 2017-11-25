@@ -6,22 +6,30 @@ PWD := $(shell pwd)
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
-	gcc charTest.c -o charTest
+	gcc charTest.c -o charTest -lpthread
 
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	rm charTest
+	rm charTestM
 	rm -f /dev/charDevice[0-3]
 
 test:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules
 	gcc charTest.c -o charTest -lpthread
+	gcc charTestM.c -o charTestM -lpthread
 	chmod +x ./charTest
+	chmod +x ./charTestM
 	insmod ./charDriver.ko $* || exit 1
 	rm -f /dev/charDevice[0-3]
 	mknod /dev/charDevice0 c 250 0
 	mknod /dev/charDevice1 c 250 1
-	./charTest >> charTest.log
+
+	for i in 1 2 3 4 5 6 7 8 9 10 ; do \
+		echo $$i ; \
+		./charTest >> charTest.log ; \
+		./charTestM >> charTest.log ; \
+	done
 	rmmod charDriver
 	rm -f /dev/charDevice[0-3]
 	cat charTest.log
@@ -33,6 +41,7 @@ install:
 uninstall:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	rm charTest
+	rm charTestM
 	rm -f /dev/charDevice[0-3]
 	rmmod charDriver
 
