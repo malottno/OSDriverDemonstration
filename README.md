@@ -3,13 +3,21 @@ A repository for tracking and storing driver demonstrations written for Operatin
 
 ### Includes:
   - Character Device Driver - Interfaces with /dev/charDevice to read and write byte data
-  - Block Device Driver - Interfaces with an allocated memory block to read and write block data
   - Network Device Driver - Creates a virtual network interface to display connection information
     
 ### Installation
-  1. ```git clone https://github.com/malottno/OSDriverDemonstration```
-  2. ```cd OSDriverDemonstration```
-  3. ```./buildAll.sh```
+  1. ```apt-get update```
+  2. ```apt-get install git make linux-headers-amd64 gcc```
+  2. ```git clone https://github.com/malottno/OSDriverDemonstration```
+  3. ```cd OSDriverDemonstration```
+  4. ```./buildAll.sh <args>```
+
+## Running Test Suite
+  After installation:
+
+  1. ```./buildAll.sh test```
+  2. Return testData.csv and testOutput.log
+
     
 ### Build Options (may require root privileges)
   - `<make|./buildAll.sh> clean` to remove build files and any installed modules
@@ -31,31 +39,12 @@ An initialization and cleanup module were also implemented to facilitate loading
 #### Test Suite
 Requirement | Satisfied in | Status
 --- | --- | ---
-Driver must be able to read in a stream of data | charTest.c | TODO
-Driver must be able to write out a stream of data | charTest.c | TODO
-Driver must be able to connect to a serial port | charTest.c | TODO
-Driver must track statistics, including: bytes tx, bytes rx, average processing time | make test (shell) | TODO
-Driver must be implemented as a kernel module | make test (shell) | TODO
-Driver must allow for multiple-process access | make test (shell) | TODO
-
-
-  
-  
-## Block Device Driver
-#### Overview
-
-#### Design
-
-#### Test Suite
-Requirement | Satisfied in | Status
---- | --- | ---
-Driver must store labels for allocated memory | blockTest.c | TODO
-Driver must allocate memory when directed allocation size is less than 1024 Bytes | blockTest.c | TODO
-Driver must implement a file system with allocation size of 1MB and blocks of 1024 Bytes | blockTest.c | TODO
-Driver must free memory when directed | blockTest.c | TODO
-Driver must track statistics, including: chunks free, bytes free, largest block available, average allocation time | blockTest.c | TODO
-Driver must be implemented as a kernel module | make test (shell) | TODO
-Driver must allow for multiple-process access | make test (shell) | TODO
+Driver must be able to read in a stream of data | charTest.c | DONE
+Driver must be able to write out a stream of data | charTest.c | DONE
+Driver must be able to connect to a serial port | charTest.c | DONE
+Driver must track statistics, including: bytes tx, bytes rx, average processing time | make test (shell) | DONE
+Driver must be implemented as a kernel module | make test (shell) | DONE
+Driver must allow for multiple-process access | make test (shell) | DONE
 
 
 ## Network Device Driver
@@ -74,11 +63,11 @@ An initialization and cleanup module were also implemented to facilitate loading
 #### Test Suite
 Requirement | Satisfied in | Status
 --- | --- | ---
-Driver must create a network interface | make test (shell) | TODO
-Driver must capture packet data on network interface | netTest.c | TODO
-Driver must track statistics, including: recent communications, total packets analyzed, analysis time | netTest.c | TODO
-Driver must be implemented as a kernel module | make test (shell) | TODO
-Driver must allow for multiple-process access | make test (shell) | TODO
+Driver must create a network interface | make test (shell) | DONE
+Driver must capture packet data on network interface | make test (shell) | DONE
+Driver must track statistics, including: recent communications, total packets analyzed, analysis time | make test (shell) | DONE
+Driver must be implemented as a kernel module | make test (shell) | DONE
+Driver must allow for multiple-process access | make test (shell) | DONE
 
 
 
