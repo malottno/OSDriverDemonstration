@@ -39,7 +39,6 @@ static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_t *off);
 static int c_open(struct inode *i, struct file *f);
 static int c_release(struct inode *i, struct file *f){
-	mutex_unlock(&charLock);
 	return 0;
 }
 
@@ -57,8 +56,10 @@ static int c_release(struct inode *i, struct file *f){
 static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off){
 	ssize_t retVal = 0;
 	int b_read = 0;
+	while(!mutex_trylock(&charLock)){;}
 
 	copy_to_user(buf, dataBuf, strlen(dataBuf));
+	mutex_unlock(&charLock);
 
 	return strlen(dataBuf);
 }
@@ -78,11 +79,13 @@ static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_
 	ssize_t retVal = 0;
 	int s_mess = 0;	
 	int i = 0;
+	while(!mutex_trylock(&charLock)){;}
 
 	for(i = 0; i < len; i++){
 		dataBuf[characterCount % BUF_LEN] = buf[i];
 		characterCount++;
 	}
+	mutex_unlock(&charLock);
 
 	return len;
 }
@@ -97,7 +100,6 @@ static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_
  */
 static int c_open(struct inode *i, struct file *f){
 	int retVal = 0;
-	while(!mutex_trylock(&charLock)){;}
 	return retVal;
 }
 

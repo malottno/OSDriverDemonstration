@@ -1,4 +1,4 @@
-obj-m := charDriver.o
+obj-m := charDriver.o charDriverM.o charDriverRO.o
 
 KVERSION := $(shell uname -r)
 KDIR := /lib/modules/$(KVERSION)/build
@@ -11,27 +11,46 @@ default:
 clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) clean
 	rm charTest
-	rm charTestM
 	rm -f /dev/charDevice[0-3]
 
 test:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules 2>charTest.log
 	gcc charTest.c -o charTest -lpthread 2>charTest.log
-	gcc charTestM.c -o charTestM -lpthread 2>charTest.log
 	chmod +x ./charTest
-	chmod +x ./charTestM
 	insmod ./charDriver.ko $* || exit 1
+	rm -f /dev/charDevice[0-3]
+	mknod /dev/charDevice0 c 250 0
+	mknod /dev/charDevice1 c 250 1
+	
+	for i in 1 2 3 4 5 6 7 8 9 10 ; do \
+		./charTest >> charTest.log ; \
+	done
+
+	rmmod charDriver
+	insmod ./charDriverM.ko $* || exit 1
 	rm -f /dev/charDevice[0-3]
 	mknod /dev/charDevice0 c 250 0
 	mknod /dev/charDevice1 c 250 1
 
 	for i in 1 2 3 4 5 6 7 8 9 10 ; do \
-		./charTest >> charTest.log ; \
-		./charTestM >> charTest.log ; \
+		./charTest >> charTestM.log ; \
 	done
-	rmmod charDriver
+	
+	rmmod charDriverM
+	insmod ./charDriverRO.ko $* || exit 1
 	rm -f /dev/charDevice[0-3]
+	mknod /dev/charDevice0 c 250 0
+	mknod /dev/charDevice1 c 250 1
+
+	for i in 1 2 3 4 5 6 7 8 9 10 ; do \
+		./charTest >> charTestRO.log ; \
+	done
+
+	rmmod charDriverRO
+
 	cat charTest.log
+	cat charTestM.log
+	cat charTestRO.log
 
 install:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules

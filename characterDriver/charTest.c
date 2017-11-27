@@ -16,7 +16,9 @@ void *threadWriter(void *vargp)
 	FILE* fp;
 	int f;
 	int i = 0;
+	int j = 0;
 	int tx = 0;
+	int rxc = 0;
 	int retVal = 0;
 	int processed = 0;
 	char strig[BUFFER_LENGTH] = "abcdefghijklmnopqrstuvwxyz";
@@ -28,36 +30,29 @@ void *threadWriter(void *vargp)
 		printf("FAILED: Open Device\n");
 		return 1;
 	}
-	close(f);
-	for(i = 0; i < 100000; i++){
-		f = open("/dev/charDevice", O_RDWR);
-		if (f > 0){
-			retVal = write(f, strig, (i%25) + 1);
-			processed += retVal;
-
-			if(retVal < 0){
-				printf("FAILED: Write to device\n");
-				return 2;
-			}
+	for(i = 0; i < 10000; i++){
+		retVal = write(f, strig, (i%25) + 1);
+		processed += retVal;
+		if(retVal < 0){
+			printf("FAILED: Write to device\n");
+			return 2;
 		}
-		close(f);
 
-
-		f = open("/dev/charDevice", O_RDWR);
-		if (f > 0){
+		for(j = 0; j < 10; j++){
 			retVal = read(f, rx, BUFFER_LENGTH);
 			//printf("%s\n\n",rx, BUFFER_LENGTH);
 			if(retVal < 0){
 				printf("FAILED: Read from device\n");
 				return 3;
 			}
+			rxc = rxc + 1;
 		}
 		tx = tx + 1;
-		close(f);
 	}
 
+	close(f);
 	fp=fopen("./testData.csv","a");
-	fprintf(fp, "%d,%d,",processed,tx);
+	fprintf(fp, "%d,%d,%d,",processed,tx,rxc);
 	fclose(fp);
 	
 	printf("Character Device successfully processed %d characters\n\tover %d writes and reads\n",processed, tx);

@@ -6,6 +6,7 @@
 #include <linux/device.h>
 #include <asm/uaccess.h>
 #include <linux/types.h>
+#include <linux/delay.h>
 
 #define BUF_LEN 500
 
@@ -29,6 +30,7 @@ int characterCount = 0;
 static struct cdev* charDevice;
 static struct class *charClass = NULL;
 static DEFINE_MUTEX(charLock);
+static atomic_t *rCount;
 
 static int major = 0;
 static const char device[] = "charDriver-Example"; 
@@ -39,7 +41,6 @@ static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_t *off);
 static int c_open(struct inode *i, struct file *f);
 static int c_release(struct inode *i, struct file *f){
-	mutex_unlock(&charLock);
 	return 0;
 }
 
@@ -57,9 +58,11 @@ static int c_release(struct inode *i, struct file *f){
 static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off){
 	ssize_t retVal = 0;
 	int b_read = 0;
-
+//	while(!mutex_trylock(&charLock)){;}
+//	atomic_inc(rCount);
+//	mutex_unlock(&charLock);
 	copy_to_user(buf, dataBuf, strlen(dataBuf));
-
+//	atomic_dec(rCount);
 	return strlen(dataBuf);
 }
 
@@ -79,10 +82,13 @@ static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_
 	int s_mess = 0;	
 	int i = 0;
 
+	while(!mutex_trylock(&charLock)){;}
+//	while(atomic_read(rCount) > 0){msleep(1);}
 	for(i = 0; i < len; i++){
 		dataBuf[characterCount % BUF_LEN] = buf[i];
 		characterCount++;
 	}
+	mutex_unlock(&charLock);
 
 	return len;
 }
@@ -97,7 +103,6 @@ static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_
  */
 static int c_open(struct inode *i, struct file *f){
 	int retVal = 0;
-	while(!mutex_trylock(&charLock)){;}
 	return retVal;
 }
 
