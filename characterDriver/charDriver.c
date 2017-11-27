@@ -6,6 +6,7 @@
 #include <linux/device.h>
 #include <asm/uaccess.h>
 #include <linux/types.h>
+#include <linux/semaphore.h>
 
 #define BUF_LEN 500
 
@@ -28,7 +29,7 @@ int characterCount = 0;
 
 static struct cdev* charDevice;
 static struct class *charClass = NULL;
-static DEFINE_MUTEX(charLock);
+static struct semaphore charSem;
 
 static int major = 0;
 static const char device[] = "charDriver-Example"; 
@@ -39,7 +40,7 @@ static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_t *off);
 static int c_open(struct inode *i, struct file *f);
 static int c_release(struct inode *i, struct file *f){
-	mutex_unlock(&charLock);
+	up(&charSem);
 	return 0;
 }
 
@@ -97,7 +98,7 @@ static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_
  */
 static int c_open(struct inode *i, struct file *f){
 	int retVal = 0;
-	while(!mutex_trylock(&charLock)){;}
+	if(down_interruptible(&charSem)){;}
 	return retVal;
 }
 
@@ -131,7 +132,8 @@ int init_module(void){
 	struct class *device_class;
 	dev_t DEV_T;
 
-	mutex_init(&charLock);
+	sema_init(&charSem,1);
+	//mutex_init(&charLock);
 //	printk(KERN_ALERT "Entering Character Driver\n");
 	major = register_chrdev(0, device, &fops);
 

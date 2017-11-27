@@ -6,6 +6,7 @@
 #include <linux/device.h>
 #include <asm/uaccess.h>
 #include <linux/types.h>
+#include <linux/semaphore.h>
 
 #define BUF_LEN 500
 
@@ -25,11 +26,10 @@ MODULE_LICENSE("GPL");
 static char dataBuf[BUF_LEN] = {0};
 static char* data_ptr;
 int characterCount = 0;
+static struct semaphore charSem;
 
 static struct cdev* charDevice;
 static struct class *charClass = NULL;
-static DEFINE_MUTEX(charLock);
-
 static int major = 0;
 static const char device[] = "charDriver-Example"; 
 
@@ -56,10 +56,10 @@ static int c_release(struct inode *i, struct file *f){
 static ssize_t c_read(struct file *f, char __user *buf, size_t len, loff_t *off){
 	ssize_t retVal = 0;
 	int b_read = 0;
-	while(!mutex_trylock(&charLock)){;}
+	if(down_interruptible(&charSem)){;}
 
 	copy_to_user(buf, dataBuf, strlen(dataBuf));
-	mutex_unlock(&charLock);
+	up(&charSem);
 
 	return strlen(dataBuf);
 }
@@ -79,13 +79,13 @@ static ssize_t c_write(struct file *f, const char __user *buf, size_t len, loff_
 	ssize_t retVal = 0;
 	int s_mess = 0;	
 	int i = 0;
-	while(!mutex_trylock(&charLock)){;}
+	if(down_interruptible(&charSem)){;}
 
 	for(i = 0; i < len; i++){
 		dataBuf[characterCount % BUF_LEN] = buf[i];
 		characterCount++;
 	}
-	mutex_unlock(&charLock);
+	up(&charSem);
 
 	return len;
 }
@@ -133,7 +133,7 @@ int init_module(void){
 	struct class *device_class;
 	dev_t DEV_T;
 
-	mutex_init(&charLock);
+	sema_init(&charSem,1);
 //	printk(KERN_ALERT "Entering Character Driver\n");
 	major = register_chrdev(0, device, &fops);
 

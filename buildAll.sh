@@ -5,8 +5,6 @@
 uname -r >> testOutput.log
 cat /proc/cpuinfo >> testOutput.log
 git log -1 >> testOutput.log
-cd blockDriver
-make $1 >> ../testOutput.log
 echo "Entering character driver..."
 cd ../characterDriver
 make $1 >> ../testOutput.log
